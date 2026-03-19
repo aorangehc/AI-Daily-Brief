@@ -53,7 +53,7 @@ jobs:
         run: |
           git config --local user.email "bot@ai-daily-brief.com"
           git config --local user.name "AI Daily Brief Bot"
-          git add data/ site/src/data/
+          git add data/ site/public/data/
           git diff --cached --quiet || git commit -m "build: regenerate site indexes for ${{ steps.vars.outputs.date }}"
           git push
 

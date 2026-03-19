@@ -14,7 +14,9 @@ try {
   const topicsResponse = await fetch(`/data/topics/${date}.json`);
   if (topicsResponse.ok) {
     const data = await topicsResponse.json();
-    topic = data.clusters?.find((t: any) => t.topic_id === topic_id);
+    // Handle both array format and {clusters: [...]} format
+    const clusters = Array.isArray(data) ? data : (data.clusters || []);
+    topic = clusters.find((t: any) => t.topic_id === topic_id);
 
     if (topic) {
       // Load items

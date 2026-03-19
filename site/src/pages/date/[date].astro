@@ -12,11 +12,13 @@ try {
     digest = await digestResponse.json();
 
     // Load topics
-    for (const topicId of digest.top_topic_ids || []) {
-      const topicResponse = await fetch(`/data/topics/${date}.json`);
-      if (topicResponse.ok) {
-        const allTopics = await topicResponse.json();
-        const topic = allTopics.clusters?.find((t: any) => t.topic_id === topicId);
+    const topicResponse = await fetch(`/data/topics/${date}.json`);
+    if (topicResponse.ok) {
+      const allTopics = await topicResponse.json();
+      // Handle both array format and {clusters: [...]} format
+      const clusters = Array.isArray(allTopics) ? allTopics : (allTopics.clusters || []);
+      for (const topicId of digest.top_topic_ids || []) {
+        const topic = clusters.find((t: any) => t.topic_id === topicId);
         if (topic) topics.push(topic);
       }
     }
