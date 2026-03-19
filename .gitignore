@@ -56,3 +56,6 @@ gh-pages/
 # Go workspace
 go.work
 go.work.sum
+
+# Test scripts and fixtures
+tests/
