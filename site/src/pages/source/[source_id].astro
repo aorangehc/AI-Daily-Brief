@@ -1,5 +1,23 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import fs from 'node:fs';
+
+export async function getStaticPaths() {
+  const sources = new Set<string>();
+
+  try {
+    const itemsDir = new URL('../../public/data/items/', import.meta.url);
+    const files = await fs.readdir(itemsDir);
+    for (const file of files) {
+      const match = file.match(/^([^.]+)\.json$/);
+      if (match) sources.add(match[1]);
+    }
+  } catch {
+    // No items data yet
+  }
+
+  return [...sources].map(source_id => ({ params: { source_id } }));
+}
 
 const { source_id } = Astro.params;
 

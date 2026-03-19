@@ -1,5 +1,23 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import fs from 'node:fs';
+
+export async function getStaticPaths() {
+  const digestFiles = new Set<string>();
+
+  try {
+    const digestsDir = new URL('../../public/data/digests/', import.meta.url);
+    const files = await fs.readdir(digestsDir);
+    for (const file of files) {
+      const match = file.match(/^(\d{4}-\d{2}-\d{2})\.json$/);
+      if (match) digestFiles.add(match[1]);
+    }
+  } catch {
+    // No digests data yet
+  }
+
+  return [...digestFiles].map(date => ({ params: { date } }));
+}
 
 const { date } = Astro.params;
 

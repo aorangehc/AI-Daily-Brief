@@ -1,5 +1,27 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import fs from 'node:fs';
+
+export async function getStaticPaths() {
+  const tags = new Set<string>();
+
+  try {
+    const indexesDir = new URL('../../public/data/indexes/', import.meta.url);
+    const files = await fs.readdir(indexesDir);
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue;
+      const content = await fs.promises.readFile(new URL(`./${file}`, indexesDir), 'utf-8');
+      const data = JSON.parse(content);
+      if (data.tags && Array.isArray(data.tags)) {
+        for (const t of data.tags) tags.add(t);
+      }
+    }
+  } catch {
+    // No indexes data yet
+  }
+
+  return [...tags].map(tag => ({ params: { tag } }));
+}
 
 const { tag } = Astro.params;
 
