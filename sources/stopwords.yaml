@@ -1,0 +1,50 @@
+# Stopwords for content processing
+
+en:
+  - a
+  - an
+  - the
+  - and
+  - or
+  - but
+  - in
+  - on
+  - at
+  - to
+  - for
+  - of
+  - with
+  - by
+  - from
+  - as
+  - is
+  - was
+  - are
+  - were
+  - been
+  - be
+  - have
+  - has
+  - had
+  - do
+  - does
+  - did
+  - will
+  - would
+  - could
+  - should
+  - may
+  - might
+  - must
+  - can
+
+zh:
+  - 的
+  - 了
+  - 是
+  - 在
+  - 和
+  - 与
+  - 或
+  - 但
+  - 以及

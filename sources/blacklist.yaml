@@ -1,0 +1,15 @@
+# Blacklist for domains and URLs that should not be collected
+
+domains:
+  - spam.example.com
+  - ads.example.com
+
+keywords:
+  - "click here"
+  - "buy now"
+  - "subscribe to"
+
+patterns:
+  - "/signup"
+  - "/login"
+  - "/register"

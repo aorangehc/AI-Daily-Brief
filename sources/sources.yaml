@@ -1,0 +1,101 @@
+# AI Daily Brief Sources Configuration
+# This file defines the news sources to be collected
+
+sources:
+  - id: openai_blog
+    name: OpenAI Blog
+    type: rss
+    enabled: true
+    category: official
+    base_url: "https://openai.com"
+    feed_url: "https://openai.com/blog/rss"
+    language: en
+    weight: 1.0
+    parser: rss_default
+    rate_limit_per_run: 20
+    allow_paths: []
+    deny_paths: []
+
+  - id: anthropic_blog
+    name: Anthropic Blog
+    type: rss
+    enabled: true
+    category: official
+    base_url: "https://anthropic.com"
+    feed_url: "https://anthropic.com/blog/rss"
+    language: en
+    weight: 1.0
+    parser: rss_default
+    rate_limit_per_run: 20
+    allow_paths: []
+    deny_paths: []
+
+  - id: google_ai_blog
+    name: Google AI Blog
+    type: rss
+    enabled: true
+    category: official
+    base_url: "https://blog.google/technology/ai"
+    feed_url: "https://blog.google/technology/ai/rss"
+    language: en
+    weight: 0.9
+    parser: rss_default
+    rate_limit_per_run: 20
+    allow_paths: []
+    deny_paths: []
+
+  - id: microsoft_ai_blog
+    name: Microsoft AI Blog
+    type: rss
+    enabled: true
+    category: official
+    base_url: "https://blogs.microsoft.com/ai"
+    feed_url: "https://blogs.microsoft.com/ai/feed"
+    language: en
+    weight: 0.9
+    parser: rss_default
+    rate_limit_per_run: 20
+    allow_paths: []
+    deny_paths: []
+
+  - id: hacker_news
+    name: Hacker News
+    type: api
+    enabled: true
+    category: community
+    base_url: "https://news.ycombinator.com"
+    api_url: "https://hacker-news.firebaseio.com/v0"
+    language: en
+    weight: 0.8
+    parser: hn_api
+    rate_limit_per_run: 30
+    allow_paths: []
+    deny_paths: []
+
+  - id: reddit_machinelearning
+    name: Reddit r/MachineLearning
+    type: rss
+    enabled: true
+    category: community
+    base_url: "https://reddit.com"
+    feed_url: "https://www.reddit.com/r/MachineLearning.rss"
+    language: en
+    weight: 0.7
+    parser: rss_default
+    rate_limit_per_run: 20
+    allow_paths: []
+    deny_paths: []
+
+  - id: arxiv_cs_ai
+    name: arXiv CS.AI
+    type: rss
+    enabled: true
+    category: research
+    base_url: "https://arxiv.org"
+    feed_url: "https://arxiv.org/rss/cs.AI"
+    language: en
+    weight: 0.85
+    parser: rss_default
+    rate_limit_per_run: 30
+    allow_paths: []
+    deny_paths: []

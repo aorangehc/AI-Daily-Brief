@@ -1,0 +1,14 @@
+# Source weight configuration
+
+source_weights:
+  official: 1.0
+  community: 0.7
+  research: 0.85
+  product: 0.75
+  forum: 0.6
+  code: 0.65
+
+# Category-specific boosts
+category_boosts:
+  official: 0.1
+  research: 0.05
