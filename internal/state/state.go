@@ -10,6 +10,13 @@ import (
 
 const stateDir = "data/state"
 
+// State represents the state data structure
+type State struct {
+	Date          string            `json:"date"`
+	Collect       map[string]string `json:"collect"`
+	LastUpdatedAt string            `json:"last_updated_at"`
+}
+
 // Load loads the state file for a given date
 func Load(date string) (*State, error) {
 	path := filepath.Join(stateDir, fmt.Sprintf("%s.json", date))
