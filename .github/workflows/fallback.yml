@@ -1,0 +1,81 @@
+name: Fallback
+
+on:
+  repository_dispatch:
+    types: [collect_fallback, digest_fallback]
+
+concurrency:
+  group: fallback-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  fallback:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine date
+        run: |
+          echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: Check collect status
+        id: check-collect
+        run: |
+          date=${{ steps.vars.outputs.date }}
+          batch="21"
+          state_file="data/state/${date}.json"
+
+          if [ ! -f "$state_file" ] || ! grep -q "\"${batch}\": \"success\"" "$state_file"; then
+            echo "needs_collect=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_collect=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger collect if needed
+        if: steps.check-collect.outputs.needs_collect == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'collect.yml',
+              ref: context.ref,
+              inputs: {
+                date: '${{ steps.vars.outputs.date }}',
+                batch: '21'
+              }
+            })
+
+      - name: Check digest status
+        id: check-digest
+        run: |
+          date=${{ steps.vars.outputs.date }}
+          state_file="data/state/${date}.json"
+
+          if [ ! -f "$state_file" ] || ! grep -q '"digest": "success"' "$state_file"; then
+            echo "needs_digest=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_digest=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger digest if needed
+        if: steps.check-digest.outputs.needs_digest == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'digest.yml',
+              ref: context.ref,
+              inputs: { date: '${{ steps.vars.outputs.date }}' }
+            })

@@ -1,0 +1,91 @@
+name: Collect
+
+on:
+  schedule:
+    # UTC: 01:17, 05:17, 09:17, 13:17 (CST: 09:17, 13:17, 17:17, 21:17)
+    - cron: "17 1,5,9,13 * * *"
+  repository_dispatch:
+    types: [collect_fallback]
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Date (YYYY-MM-DD)"
+        required: true
+      batch:
+        description: "Batch (09, 13, 17, 21)"
+        required: true
+
+concurrency:
+  group: collect-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+
+      - name: Build collector
+        run: go build -o bin/collector ./cmd/collector
+
+      - name: Determine date and batch
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "date=${{ inputs.date }}" >> $GITHUB_OUTPUT
+            echo "batch=${{ inputs.batch }}" >> $GITHUB_OUTPUT
+          else
+            echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+            # Determine batch from hour (UTC)
+            hour=$(date -u +%H)
+            case $hour in
+              01) batch="09" ;;
+              05) batch="13" ;;
+              09) batch="17" ;;
+              13) batch="21" ;;
+            esac
+            echo "batch=$batch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check state for idempotency
+        id: check-state
+        run: |
+          state_file="data/state/${{ steps.vars.outputs.date }}.json"
+          if [ -f "$state_file" ]; then
+            if grep -q "\"${{ steps.vars.outputs.batch }}\": \"success\"" "$state_file"; then
+              echo "already_done=true" >> $GITHUB_OUTPUT
+            else
+              echo "already_done=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "already_done=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run collector
+        if: steps.check-state.outputs.already_done != 'true'
+        env:
+          DATE: ${{ steps.vars.outputs.date }}
+          BATCH: ${{ steps.vars.outputs.batch }}
+        run: |
+          ./bin/collector --date=$DATE --batch=$BATCH --verbose
+
+      - name: Commit data
+        if: steps.check-state.outputs.already_done != 'true'
+        run: |
+          git config --local user.email "bot@ai-daily-brief.com"
+          git config --local user.name "AI Daily Brief Bot"
+          git add data/
+          git diff --cached --quiet || git commit -m "chore: update raw items for ${{ steps.vars.outputs.date }} batch ${{ steps.vars.outputs.batch }}"
+          git push

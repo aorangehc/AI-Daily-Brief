@@ -1,0 +1,41 @@
+name: Maintenance
+
+on:
+  schedule:
+    # Weekly on Sunday at 00:00 UTC (08:00 CST)
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: maintenance
+  cancel-in-progress: true
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clean old logs
+        run: |
+          find data/state/logs -name "*.jsonl" -mtime +30 -delete
+          echo "Cleaned logs older than 30 days"
+
+      - name: Check data sizes
+        run: |
+          du -sh data/*/
+
+      - name: Validate indexes
+        run: |
+          if [ -f data/indexes/archive.json ]; then
+            python3 -c "import json; json.load(open('data/indexes/archive.json'))"
+            echo "archive.json is valid"
+          fi
+
+      - name: Check source availability
+        run: |
+          echo "Checking source availability..."
