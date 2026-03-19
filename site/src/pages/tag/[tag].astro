@@ -1,0 +1,64 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const { tag } = Astro.params;
+
+let items: any[] = [];
+let dates: string[] = [];
+
+// Search through available item files
+// In a real implementation, this would use a search index
+---
+
+<Layout title={`#${tag}`}>
+  <h1>标签: {tag}</h1>
+
+  {items.length > 0 ? (
+    <ul class="item-list">
+      {items.map((item) => (
+        <li>
+          <a href={item.canonical_url} target="_blank" rel="noopener">
+            {item.title}
+          </a>
+          <span class="source">{item.domain}</span>
+          <span class="date">{item.published_at?.split('T')[0]}</span>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="empty">未找到带有该标签的消息</p>
+  )}
+</Layout>
+
+<style>
+  .item-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .item-list li {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .item-list a {
+    color: var(--color-link);
+    text-decoration: none;
+  }
+
+  .source, .date {
+    display: block;
+    font-size: 0.85rem;
+    color: #888;
+  }
+
+  .date {
+    margin-top: 0.25rem;
+  }
+
+  .empty {
+    color: #666;
+    text-align: center;
+    padding: 3rem 0;
+  }
+</style>

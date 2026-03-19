@@ -1,0 +1,140 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const { topic_id } = Astro.params;
+
+// topic_id format: YYYY-MM-DD-topic-XX
+const parts = (topic_id || '').split('-');
+const date = parts.slice(0, 3).join('-');
+
+let topic = null;
+let items = [];
+
+try {
+  const topicsResponse = await fetch(`/data/topics/${date}.json`);
+  if (topicsResponse.ok) {
+    const data = await topicsResponse.json();
+    topic = data.clusters?.find((t: any) => t.topic_id === topic_id);
+
+    if (topic) {
+      // Load items
+      const itemsResponse = await fetch(`/data/items/${date}.json`);
+      if (itemsResponse.ok) {
+        const allItems = await itemsResponse.json();
+        items = allItems.filter((item: any) => topic.item_ids.includes(item.id));
+      }
+    }
+  }
+} catch (e) {
+  // Data not available
+}
+---
+
+<Layout title={topic?.name || '专题'}>
+  <p><a href={`/date/${date}`}>← 返回日期</a></p>
+
+  {topic ? (
+    <article>
+      <header>
+        <h1>{topic.name}</h1>
+        <p class="summary">{topic.summary}</p>
+        {topic.why_it_matters && (
+          <p class="why"><strong>为什么重要:</strong> {topic.why_it_matters}</p>
+        )}
+      </header>
+
+      <section class="keywords">
+        {topic.keywords?.map((kw: string) => (
+          <span class="keyword">{kw}</span>
+        ))}
+      </section>
+
+      <section class="items">
+        <h2>相关消息 ({items.length})</h2>
+        {items.map((item: any) => (
+          <div class="item">
+            <h3>
+              <a href={item.canonical_url} target="_blank" rel="noopener">
+                {item.title}
+              </a>
+            </h3>
+            {item.summary_1line && <p class="summary">{item.summary_1line}</p>}
+            <div class="meta">
+              <span class="source">{item.domain}</span>
+              <span class="date">{item.published_at?.split('T')[0]}</span>
+            </div>
+          </div>
+        ))}
+      </section>
+    </article>
+  ) : (
+    <p class="not-found">未找到该专题</p>
+  )}
+</Layout>
+
+<style>
+  .summary {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #444;
+  }
+
+  .why {
+    background: #f9f9f9;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+  }
+
+  .keywords {
+    margin: 1.5rem 0;
+  }
+
+  .keyword {
+    display: inline-block;
+    background: #e0e0e0;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-right: 0.5rem;
+  }
+
+  .items {
+    margin-top: 2rem;
+  }
+
+  .item {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .item h3 {
+    margin-bottom: 0.5rem;
+  }
+
+  .item h3 a {
+    color: var(--color-link);
+    text-decoration: none;
+  }
+
+  .item .summary {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+
+  .meta {
+    font-size: 0.85rem;
+    color: #888;
+  }
+
+  .meta span {
+    margin-right: 1rem;
+  }
+
+  .not-found {
+    text-align: center;
+    padding: 3rem 0;
+    color: #666;
+  }
+</style>

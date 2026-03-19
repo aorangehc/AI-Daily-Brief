@@ -1,0 +1,180 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Load state files for last 7 days
+const today = new Date();
+const states = [];
+
+for (let i = 0; i < 7; i++) {
+  const date = new Date(today);
+  date.setDate(date.getDate() - i);
+  const dateStr = date.toISOString().split('T')[0];
+
+  try {
+    const response = await fetch(`/data/state/${dateStr}.json`);
+    if (response.ok) {
+      states.push(await response.json());
+    } else {
+      states.push({ date: dateStr, collect: {}, digest: 'pending', deploy: 'pending' });
+    }
+  } catch (e) {
+    states.push({ date: dateStr, collect: {}, digest: 'no data', deploy: 'no data' });
+  }
+}
+
+// Load source count
+let sourceCount = 0;
+try {
+  const sourcesResponse = await fetch('/data/indexes/sources.json');
+  if (sourcesResponse.ok) {
+    const sources = await sourcesResponse.json();
+    sourceCount = sources.length;
+  }
+} catch (e) {
+  // Use default
+}
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'success': return '#22c55e';
+    case 'failed': return '#ef4444';
+    default: return '#f59e0b';
+  }
+};
+---
+
+<Layout title="系统状态">
+  <h1>系统状态</h1>
+
+  <section class="overview">
+    <div class="stat-card">
+      <span class="value">{sourceCount}</span>
+      <span class="label">数据来源</span>
+    </div>
+    <div class="stat-card">
+      <span class="value">{states.filter(s => s.deploy === 'success').length}/7</span>
+      <span class="label">本周发布</span>
+    </div>
+  </section>
+
+  <section class="timeline">
+    <h2>最近 7 天状态</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>日期</th>
+          <th>09:17</th>
+          <th>13:17</th>
+          <th>17:17</th>
+          <th>21:17</th>
+          <th>晚报</th>
+          <th>发布</th>
+        </tr>
+      </thead>
+      <tbody>
+        {states.map((state) => (
+          <tr>
+            <td class="date">{state.date}</td>
+            <td style={`color: ${getStatusColor(state.collect['09'])}`}>
+              {state.collect['09'] || '-'}
+            </td>
+            <td style={`color: ${getStatusColor(state.collect['13'])}`}>
+              {state.collect['13'] || '-'}
+            </td>
+            <td style={`color: ${getStatusColor(state.collect['17'])}`}>
+              {state.collect['17'] || '-'}
+            </td>
+            <td style={`color: ${getStatusColor(state.collect['21'])}`}>
+              {state.collect['21'] || '-'}
+            </td>
+            <td style={`color: ${getStatusColor(state.digest)}`}>
+              {state.digest || '-'}
+            </td>
+            <td style={`color: ${getStatusColor(state.deploy)}`}>
+              {state.deploy || '-'}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="legend">
+    <h3>状态说明</h3>
+    <ul>
+      <li><span style="color: #22c55e">● success</span> - 已成功完成</li>
+      <li><span style="color: #ef4444">● failed</span> - 执行失败</li>
+      <li><span style="color: #f59e0b">● pending</span> - 待执行或执行中</li>
+    </ul>
+  </section>
+</Layout>
+
+<style>
+  .overview {
+    display: flex;
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+
+  .stat-card {
+    background: #f9f9f9;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .stat-card .value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--color-link);
+  }
+
+  .stat-card .label {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .timeline {
+    margin: 2rem 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: 0.75rem;
+    text-align: center;
+    border: 1px solid var(--color-border);
+  }
+
+  th {
+    background: #f5f5f5;
+    font-weight: normal;
+  }
+
+  .date {
+    font-weight: 500;
+  }
+
+  .legend {
+    margin-top: 3rem;
+    color: #666;
+  }
+
+  .legend h3 {
+    font-size: 1rem;
+    color: #333;
+  }
+
+  .legend ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .legend li {
+    margin: 0.5rem 0;
+  }
+</style>

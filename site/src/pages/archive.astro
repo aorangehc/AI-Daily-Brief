@@ -1,0 +1,72 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Load archive index
+let archives: {date: string, headline: string}[] = [];
+
+try {
+  const response = await fetch('/data/indexes/archive.json');
+  if (response.ok) {
+    archives = await response.json();
+  }
+} catch (e) {
+  // No archive available
+}
+---
+
+<Layout title="归档">
+  <h1>归档</h1>
+
+  {archives.length > 0 ? (
+    <ul class="archive-list">
+      {archives.map((item: {date: string, headline: string}) => (
+        <li>
+          <a href={`/date/${item.date}`}>
+            <span class="date">{item.date}</span>
+            <span class="headline">{item.headline}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="empty">暂无归档数据</p>
+  )}
+</Layout>
+
+<style>
+  .archive-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .archive-list li {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .archive-list a {
+    display: flex;
+    padding: 1rem 0;
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .archive-list a:hover {
+    background: #f9f9f9;
+  }
+
+  .date {
+    width: 120px;
+    color: #666;
+    flex-shrink: 0;
+  }
+
+  .headline {
+    flex: 1;
+  }
+
+  .empty {
+    color: #666;
+    text-align: center;
+    padding: 3rem 0;
+  }
+</style>

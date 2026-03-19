@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="关于">
+  <h1>关于 AI Daily Brief</h1>
+
+  <section>
+    <h2>项目目标</h2>
+    <p>
+      AI Daily Brief 是一个由 GitHub 仓库驱动、GitHub Pages 发布的每日 AI 消息晚报系统。
+      系统每日自动抓取全球 AI 领域的最新资讯，进行标准化、去重、聚类、摘要处理，
+      最终形成一份简洁易读的晚报。
+    </p>
+  </section>
+
+  <section>
+    <h2>数据来源</h2>
+    <ul>
+      <li>官方博客 (OpenAI, Anthropic, Google AI, Microsoft)</li>
+      <li>研究论文 (arXiv)</li>
+      <li>社区讨论 (Hacker News, Reddit)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>运行时间</h2>
+    <ul>
+      <li>抓取时间: 每日 09:17, 13:17, 17:17, 21:17 CST</li>
+      <li>晚报生成: 每日 21:35 CST</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>技术栈</h2>
+    <ul>
+      <li>后端: Go</li>
+      <li>智能处理: Openclaw</li>
+      <li>前端: Astro</li>
+      <li>托管: GitHub Pages</li>
+      <li>CI/CD: GitHub Actions</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>参与贡献</h2>
+    <p>
+      欢迎通过 GitHub Issues 提供反馈或建议。
+    </p>
+  </section>
+</Layout>
+
+<style>
+  section {
+    margin: 2rem 0;
+  }
+
+  section h2 {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.5rem;
+  }
+
+  ul {
+    padding-left: 1.5rem;
+  }
+
+  li {
+    margin: 0.5rem 0;
+  }
+</style>

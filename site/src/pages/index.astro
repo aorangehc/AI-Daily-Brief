@@ -1,0 +1,195 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Load today's digest
+const today = new Date().toISOString().split('T')[0];
+const digestUrl = `/data/digests/${today}.json`;
+
+let digest = null;
+try {
+  const response = await fetch(digestUrl);
+  if (response.ok) {
+    digest = await response.json();
+  }
+} catch (e) {
+  // Fallback to latest digest
+}
+
+// Load latest digest if today's not available
+if (!digest) {
+  try {
+    const latestResponse = await fetch('/data/indexes/latest.json');
+    if (latestResponse.ok) {
+      const latest = await latestResponse.json();
+      const digestResponse = await fetch(`/data/digests/${latest.date}.json`);
+      if (digestResponse.ok) {
+        digest = await digestResponse.json();
+      }
+    }
+  } catch (e) {
+    // No digest available
+  }
+}
+---
+
+<Layout title="首页">
+  <section class="hero">
+    <h1>AI Daily Brief</h1>
+    <p class="subtitle">每日 AI 资讯晚报</p>
+  </section>
+
+  {digest ? (
+    <section class="digest">
+      <div class="digest-header">
+        <h2>{digest.headline}</h2>
+        <p class="lead">{digest.lead}</p>
+        <p class="date">{digest.date}</p>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-value">{digest.stats.raw_items}</span>
+          <span class="stat-label">原始消息</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{digest.stats.normalized_items}</span>
+          <span class="stat-label">标准化消息</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{digest.stats.published_items}</span>
+          <span class="stat-label">发布消息</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{digest.stats.topics}</span>
+          <span class="stat-label">专题数</span>
+        </div>
+      </div>
+
+      <div class="topics">
+        <h3>今日专题</h3>
+        {digest.top_topic_ids?.map((topicId: string) => (
+          <a href={`/topic/${topicId}`} class="topic-card">
+            {topicId}
+          </a>
+        ))}
+      </div>
+    </section>
+  ) : (
+    <div class="no-digest">
+      <p>暂无晚报数据</p>
+      <p>系统将在每日 21:35 CST 自动生成晚报</p>
+    </div>
+  )}
+
+  <section class="actions">
+    <a href="/archive" class="btn">查看归档</a>
+    <a href="/about" class="btn">了解更多</a>
+  </section>
+</Layout>
+
+<style>
+  .hero {
+    text-align: center;
+    padding: 3rem 0;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: #666;
+    font-size: 1.2rem;
+  }
+
+  .digest {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 2rem;
+    margin: 2rem 0;
+  }
+
+  .digest-header h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .lead {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #444;
+  }
+
+  .date {
+    color: #888;
+    font-size: 0.9rem;
+  }
+
+  .stats {
+    display: flex;
+    gap: 2rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--color-link);
+  }
+
+  .stat-label {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .topics h3 {
+    margin-bottom: 1rem;
+  }
+
+  .topic-card {
+    display: inline-block;
+    background: white;
+    border: 1px solid var(--color-border);
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    margin: 0.5rem 0.5rem 0.5rem 0;
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .topic-card:hover {
+    background: #f0f0f0;
+  }
+
+  .no-digest {
+    text-align: center;
+    padding: 4rem 0;
+    color: #666;
+  }
+
+  .actions {
+    text-align: center;
+    margin: 3rem 0;
+  }
+
+  .btn {
+    display: inline-block;
+    background: var(--color-link);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 4px;
+    text-decoration: none;
+    margin: 0 0.5rem;
+  }
+
+  .btn:hover {
+    background: #0055aa;
+  }
+</style>
