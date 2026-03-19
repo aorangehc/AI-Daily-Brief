@@ -1,9 +1,13 @@
 name: Deploy
 
 on:
-  workflow_run:
-    workflows: ["Render"]
-    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'site/public/data/**'
+      - 'site/src/**'
+      - 'site/astro.config.mjs'
+      - 'site/package.json'
   workflow_dispatch:
     inputs:
       date:
@@ -59,6 +63,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Update state
+        if: inputs.date != '' || github.event.inputs.date != ''
         run: |
           DATE=${{ inputs.date || github.event.inputs.date }}
           STATE_FILE="data/state/${DATE}.json"

@@ -1,11 +1,6 @@
 name: Digest
 
 on:
-  workflow_run:
-    workflows: ["Collect"]
-    types: [completed]
-  repository_dispatch:
-    types: [digest_fallback]
   workflow_dispatch:
     inputs:
       date:
@@ -44,11 +39,7 @@ jobs:
       - name: Determine date
         id: vars
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "date=${{ inputs.date }}" >> $GITHUB_OUTPUT
-          else
-            echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
-          fi
+          echo "date=${{ inputs.date }}" >> $GITHUB_OUTPUT
 
       - name: Check state for idempotency
         id: check-state
@@ -99,15 +90,3 @@ jobs:
           git diff --cached --quiet || git commit -m "feat: generate digest for ${{ steps.vars.outputs.date }}"
           git push
 
-      - name: Trigger render
-        if: steps.check-state.outputs.already_done != 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'render.yml',
-              ref: context.ref,
-              inputs: { date: '${{ steps.vars.outputs.date }}' }
-            })
