@@ -18,6 +18,7 @@ type RawItem struct {
 type Item struct {
 	ID              string   `json:"id"`
 	RawID           string   `json:"raw_id"`
+	SourceID        string   `json:"source_id"`
 	CanonicalURL    string   `json:"canonical_url"`
 	Domain          string   `json:"domain"`
 	Title           string   `json:"title"`
